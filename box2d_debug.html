@@ -1,0 +1,134 @@
+<!--suppress ALL -->
+<html>
+
+<head>
+
+    <script src="lib/embox2d-noclosure.min.js"></script>
+    <script src="lib/embox2d-helpers.js"></script>
+    <script src="lib/embox2d-html5canvas-debugDraw.js"></script>
+
+</head>
+<body>
+<div id="container">
+
+    <canvas id="canvas" width="640" height="480" tabindex='1'></canvas>
+    <script>
+
+      let ballRadius = 1;
+
+      var context;
+      var PTM = 32;
+
+      var wWorld;
+
+      function createPhysicalBall(ballRadius) {
+        let bodyDef = new Box2D.b2BodyDef();
+        bodyDef.set_type(Box2D.b2_dynamicBody);
+        bodyDef.set_position(new Box2D.b2Vec2(0, 5));
+
+
+        let wBall = wWorld.CreateBody(bodyDef);
+
+        let b2CircleShape = new Box2D.b2CircleShape();
+        b2CircleShape.set_m_radius(ballRadius);
+
+        var ballFixture = new Box2D.b2FixtureDef();
+        ballFixture.set_shape(b2CircleShape)
+        ballFixture.set_restitution(0.1)
+        ballFixture.set_friction(0.1)
+        ballFixture.set_density(10)
+
+//        wBall.CreateFixture(b2CircleShape, 0 );
+
+        wBall.CreateFixture(ballFixture);
+
+        wBall.SetLinearVelocity(new Box2D.b2Vec2(0.3, 0))
+        return wBall;
+      }
+
+      window.onload = function() {
+        using(Box2D, "b2.+")
+        init();
+        gameLoop();
+      };
+
+      function createPhysicsWorld() {
+        wWorld = new Box2D.b2World(new Box2D.b2Vec2(0, -1));
+
+        var ground = wWorld.CreateBody(new Box2D.b2BodyDef());
+
+        var shape0 = new Box2D.b2EdgeShape();
+        shape0.Set(new Box2D.b2Vec2(-10, 1), new Box2D.b2Vec2(10, -1));
+
+        let groundFixture = new Box2D.b2FixtureDef();
+        groundFixture.set_shape(shape0)
+        groundFixture.set_friction(0.1)
+
+        ground.CreateFixture(groundFixture);
+
+        // Create the ball.
+        wBall = createPhysicalBall(ballRadius);
+      }
+
+      function updatePhysicsWorld() {
+        wWorld.Step(1 / 60, 1, 1);
+
+        console.log(wBall.GetPosition().get_x())
+        console.log(wBall.GetPosition().get_y())
+      }
+
+      function gameLoop() {
+
+        updatePhysicsWorld();
+        draw()
+
+        requestAnimationFrame(gameLoop);
+
+      }
+
+      function init() {
+        let canvas = document.getElementById("canvas");
+        context = canvas.getContext( '2d' );
+
+        let myDebugDraw = getCanvasDebugDraw();
+
+        myDebugDraw.SetFlags(0x0001);
+
+        createPhysicsWorld();
+
+        wWorld.SetDebugDraw(myDebugDraw);
+        draw();
+
+
+
+        context.restore();
+      }
+
+      function draw() {
+
+        //black background
+        context.fillStyle = 'rgb(0,0,0)';
+        context.fillRect( 0, 0, canvas.width, canvas.height );
+
+        context.save();
+        context.translate(320, 240);
+        context.scale(1,-1);
+        context.scale(PTM,PTM);
+        context.lineWidth /= PTM;
+
+        drawAxes(context);
+
+        context.fillStyle = 'rgb(255,255,0)';
+        wWorld.DrawDebugData();
+
+        context.restore();
+      }
+
+
+
+    </script>
+</div>
+
+
+</body>
+</html>

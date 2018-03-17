@@ -4,8 +4,13 @@
 <head>
 
     <script src="lib/three.js"></script>
-    <script src="lib/Box2D_v2.3.1_min.js"></script>
+
     <script src="lib/TrackBallControls.js"></script>
+
+    <script src="lib/embox2d-noclosure.min.js"></script>
+    <script src="lib/embox2d-helpers.js"></script>
+    <script src="lib/embox2d-html5canvas-debugDraw.js"></script>
+
 
 
 </head>
@@ -14,6 +19,16 @@
 
 
     <script>
+
+      var camera = undefined,
+        scene = undefined,
+        renderer = undefined,
+        light = undefined,
+        plane = undefined,
+        ball = undefined,
+        ballRadius = 0.5,
+        ironTexture = THREE.ImageUtils.loadTexture('/ball.png');
+
 
       function createRenderGround() {
         let plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(5, 5, 1, 1), new THREE.MeshLambertMaterial({color: 0xffff00}));
@@ -72,21 +87,44 @@
         return wBall;
       }
 
-      Box2D().then(function (Box2D) {
-        var camera = undefined,
-          scene = undefined,
-          renderer = undefined,
-          light = undefined,
-          plane = undefined,
-          ball = undefined,
-          ballRadius = 0.5,
-          ironTexture = THREE.ImageUtils.loadTexture('/ball.png');
+
+      window.onload = function() {
+        using(Box2D, "b2.+")
+        init();
+        gameLoop();
+      };
+
+      function init() {
 
 
         var wWorld = undefined;
         var wBall = undefined;
 
         var controls = undefined;
+        renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+        // 设置渲染器参数
+        renderer.setClearColor(0xf0f0f0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+
+        renderer.shadowCameraNear = 1;
+        renderer.shadowCameraFar = 1000;
+        renderer.shadowCameraFov = 50;
+
+        renderer.shadowMapBias = 0.0039;
+        renderer.shadowMapDarkness = 0.5;
+        renderer.shadowMapWidth = 1024;
+        renderer.shadowMapHeight = 1024;
+
+        document.body.appendChild(renderer.domElement);
+
+        createPhysicsWorld();
+        createRenderWorld();
+
+      }
+
 
         function createRenderWorld() {
           // Create the scene object.
@@ -133,6 +171,7 @@
 
           console.log(wBall)
 
+
         }
 
         function updatePhysicsWorld() {
@@ -165,30 +204,8 @@
         }
 
 
-        renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
-        // 设置渲染器参数
-        renderer.setClearColor(0xf0f0f0);
-        renderer.setSize(window.innerWidth, window.innerHeight);
 
-        renderer.shadowMapEnabled = true;
-        renderer.shadowMapSoft = true;
 
-        renderer.shadowCameraNear = 1;
-        renderer.shadowCameraFar = 1000;
-        renderer.shadowCameraFov = 50;
-
-        renderer.shadowMapBias = 0.0039;
-        renderer.shadowMapDarkness = 0.5;
-        renderer.shadowMapWidth = 1024;
-        renderer.shadowMapHeight = 1024;
-
-        document.body.appendChild(renderer.domElement);
-
-        createPhysicsWorld();
-        createRenderWorld();
-        gameLoop()
-
-      })
 
     </script>
 </div>
